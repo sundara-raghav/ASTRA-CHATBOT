@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Astra AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6c5ce7;
+            --secondary-color: #a29bfe;
+            --accent-color: #fd79a8;
+            --dark-color: #2d3436;
+            --light-color: #f9f9f9;
+            --success-color: #00b894;
+            --warning-color: #fdcb6e;
+            --danger-color: #d63031;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+        
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            max-width: 100%;
+            height: 100vh;
+            margin: 0 auto;
+            background-color: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .chat-header h2 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .chat-header h2 i {
+            margin-right: 0.5rem;
+            font-size: 1.3rem;
+        }
+        
+        .chat-header .btn {
+            padding: 0.3rem 0.6rem;
+            font-size: 0.8rem;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background-color: #f9f9f9;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        
+        .message-container {
+            display: flex;
+            gap: 0.8rem;
+            max-width: 95%;
+        }
+        
+        .user-message-container {
+            align-self: flex-end;
+        }
+        
+        .assistant-message-container {
+            align-self: flex-start;
+        }
+        
+        .user-avatar, .assistant-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1rem;
+        }
+        
+        .user-avatar {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .assistant-avatar {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .message {
+            max-width: 100%;
+            padding: 0.8rem 1rem;
+            border-radius: 1rem;
+            margin-bottom: 0.3rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            position: relative;
+            animation: fadeIn 0.3s ease-out forwards;
+            opacity: 0;
+            transform: translateY(10px);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        .user-message {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border-bottom-right-radius: 0.2rem;
+        }
+        
+        .assistant-message {
+            background-color: white;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-bottom-left-radius: 0.2rem;
+        }
+        
+        .chat-input {
+            padding: 0.8rem;
+            background-color: white;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            position: sticky;
+            bottom: 0;
+        }
+        
+        .chat-input form {
+            display: flex;
+            align-items: center;
+            background-color: #f5f7fa;
+            border-radius: 2rem;
+            padding: 0.4rem 0.6rem;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .chat-input form:focus-within {
+            box-shadow: 0 0 0 2px var(--primary-color);
+            background-color: white;
+        }
+        
+        .chat-input input {
+            border: none;
+            background: transparent;
+            padding: 0.6rem 0.8rem;
+            font-size: 0.95rem;
+            outline: none;
+            flex-grow: 1;
+            min-height: 40px;
+        }
+        
+        .chat-input button {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: transform 0.2s;
+        }
+        
+        .chat-input button:hover {
+            transform: scale(1.05);
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 0.8rem;
+            background-color: white;
+            border-radius: 1rem;
+            width: fit-content;
+            margin-bottom: 0.3rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            font-size: 0.9rem;
+        }
+        
+        .typing-indicator span {
+            height: 6px;
+            width: 6px;
+            background-color: var(--secondary-color);
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            opacity: 0.4;
+            animation: typing 1.2s infinite;
+        }
+        
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        pre {
+            background-color: #2d3436;
+            color: #f9f9f9;
+            padding: 0.8rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 0.6rem 0;
+            font-size: 0.85rem;
+        }
+        
+        code {
+            font-family: 'Fira Code', monospace;
+        }
+        
+        .toast {
+            position: fixed;
+            top: 1rem;
+            /* start: 50%; */
+            translate: middle-x;
+            z-index: 1055;
+            min-width: 250px;
+        }
+        
+        /* Modal adjustments for mobile */
+        .modal-content {
+            border-radius: 1rem;
+            border: none;
+        }
+        
+        .modal-header {
+            border-radius: 1rem 1rem 0 0 !important;
+        }
+        
+        @media (min-width: 768px) {
+            .chat-container {
+                max-width: 800px;
+                height: 90vh;
+                margin: 2rem auto;
+                border-radius: 1rem;
+            }
+            
+            .chat-header {
+                padding: 1.2rem;
+            }
+            
+            .chat-header h2 {
+                font-size: 1.4rem;
+            }
+            
+            .chat-messages {
+                padding: 1.5rem;
+            }
+            
+            .message {
+                max-width: 80%;
+                padding: 1rem 1.2rem;
+                font-size: 1rem;
+            }
+            
+            .user-avatar, .assistant-avatar {
+                width: 42px;
+                height: 42px;
+                font-size: 1.1rem;
+            }
+            
+            .chat-input {
+                padding: 1rem;
+            }
+            
+            .chat-input input {
+                padding: 0.8rem 1rem;
+                font-size: 1rem;
+            }
+            
+            .chat-input button {
+                width: 45px;
+                height: 45px;
+            }
+        }
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes typing {
+            0%, 100% {
+                transform: translateY(0);
+                opacity: 0.4;
+            }
+            50% {
+                transform: translateY(-4px);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 767.98px) {
+            .toast {
+                top: 50%;
+                transform: translate(-50%, -50%);
+                left: 50%;
+                right: auto;
+                bottom: auto;
+                width: auto;
+                max-width: 90vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2><i class="fas fa-robot"></i> Astra AI</h2>
+            <div>
+                <button type="button" class="btn btn-sm btn-outline-light ms-2" id="clear-chat-btn">
+                    <i class="fas fa-broom"></i> <span class="d-none d-md-inline">Clear</span>
+                </button>
+            </div>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="message-container assistant-message-container">
+                <div class="assistant-avatar"><i class="fas fa-robot"></i></div>
+                <div class="assistant-message message">
+                    <p>👋 Hello! I'm Astra, your AI assistant powered by advanced language models.</p>
+                    <p>I can help you with:</p>
+                    <ul>
+                        <li>Answering questions</li>
+                        <li>Generating creative content</li>
+                        <li>Providing information</li>
+                        <li>Coding assistance</li>
+                    </ul>
+                    <p>How can I assist you today?</p>
+                </div>
+            </div>
+        </div>
+        <div class="chat-input">
+            <form id="chat-form">
+                <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off" style="width: 100%; max-width: 100vw; font-size: 1rem; padding: 0.7rem; border-radius: 1rem; border: 1px solid #eee;">
+                <button type="submit" id="send-button">
+                    <span id="loading-indicator" class="loading d-none"></span>
+                    <i class="fas fa-paper-plane" id="send-icon"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatForm = document.getElementById('chat-form');
+            const userInput = document.getElementById('user-input');
+            const chatMessages = document.getElementById('chat-messages');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const sendIcon = document.getElementById('send-icon');
+            
+            // Store conversation history
+            let conversationHistory = [];
+            
+            // Add initial assistant message to history
+            conversationHistory.push({
+                role: 'assistant',
+                content: '👋 Hello! I\'m Astra, your AI assistant powered by advanced language models.\n\nI can help you with:\n- Answering questions\n- Generating creative content\n- Providing information\n- Coding assistance\n\nHow can I assist you today?'
+            });
+
+            chatForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const message = userInput.value.trim();
+                if (!message) return;
+                addMessage(message, 'user');
+                conversationHistory.push({ role: 'user', content: message });
+                userInput.value = '';
+                showTypingIndicator();
+                sendIcon.classList.add('d-none');
+                loadingIndicator.classList.remove('d-none');
+                try {
+                    const response = await fetch('/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: message, history: conversationHistory })
+                    });
+                    const contentType = response.headers.get('content-type') || '';
+                    let assistantResponse = '';
+                    if (contentType.includes('text/event-stream')) {
+                        // Streaming response
+                        const reader = response.body.getReader();
+                        const decoder = new TextDecoder('utf-8');
+                        let buffer = '';
+                        let done = false;
+                        removeTypingIndicator();
+                        while (!done) {
+                            const { value, done: doneReading } = await reader.read();
+                            done = doneReading;
+                            buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
+                            let lines = buffer.split('\n');
+                            buffer = lines.pop();
+                            for (let line of lines) {
+                                line = line.trim();
+                                if (line.startsWith('data: ')) line = line.slice(6);
+                                if (!line) continue;
+                                try {
+                                    const data = JSON.parse(line);
+                                    if (data.type === 'chunk' && data.content) {
+                                        assistantResponse += data.content;
+                                    } else if (data.type === 'end' && data.full_response) {
+                                        assistantResponse = data.full_response;
+                                    } else if (data.type === 'error') {
+                                        addMessage(`Error: ${data.error}`, 'assistant');
+                                    }
+                                } catch (err) {}
+                            }
+                        }
+                        if (assistantResponse) {
+                            addMessage(assistantResponse, 'assistant');
+                            conversationHistory.push({ role: 'assistant', content: assistantResponse });
+                        }
+                    } else {
+                        // Non-streaming response
+                        const data = await response.json();
+                        removeTypingIndicator();
+                        if (response.ok) {
+                            addMessage(data.response, 'assistant');
+                            conversationHistory.push({ role: 'assistant', content: data.response });
+                            if (data.note) addSystemMessage(data.note, 'info');
+                        } else {
+                            let errorMessage = `Error: ${data.error}`;
+                            if (data.quota_exceeded) {
+                                const quotaMessage = `<h5><i class=\"fas fa-exclamation-triangle me-2\"></i> API Quota Exceeded</h5><p>You've reached the free usage limit for the Gemini API.</p><p>Options:</p><ul><li>Wait a while before trying again</li><li>Get your own API key from <a href=\"https://ai.google.dev/\" target=\"_blank\">Google AI Studio</a></li><li>Update the API key in settings</li></ul>`;
+                                addSystemMessage(quotaMessage, 'warning');
+                            } else {
+                                if (data.available_models) {
+                                    errorMessage += '\n\nAvailable models:';
+                                    data.available_models.forEach(model => { errorMessage += `\n- ${model}`; });
+                                    errorMessage += '\n\nPlease try again or update the model name in settings.';
+                                }
+                                if (data.technical_details) {
+                                    errorMessage += '\n\nTechnical details:\n' + data.technical_details;
+                                }
+                                addMessage(errorMessage, 'assistant');
+                            }
+                        }
+                    }
+                } catch (error) {
+                    addMessage(`Error: ${error.message}`, 'assistant');
+                } finally {
+                    loadingIndicator.classList.add('d-none');
+                    sendIcon.classList.remove('d-none');
+                }
+            });
+            
+            // Clear chat functionality
+            document.getElementById('clear-chat-btn').addEventListener('click', function() {
+                // Clear the UI
+                chatMessages.innerHTML = '';
+                
+                // Reset conversation history but keep the initial greeting
+                conversationHistory = [{
+                    role: 'assistant',
+                    content: '👋 Hello! I\'m Astra, your AI assistant powered by advanced language models.\n\nI can help you with:\n- Answering questions\n- Generating creative content\n- Providing information\n- Coding assistance\n\nHow can I assist you today?'
+                }];
+                
+                // Add the initial message back to the UI
+                addMessage(conversationHistory[0].content, 'assistant');
+                
+                // Show toast notification
+                showToast('Chat history has been cleared!', 'success');
+            });
+            
+            // Add typing indicator function
+            function showTypingIndicator() {
+                const typingContainer = document.createElement('div');
+                typingContainer.id = 'typing-indicator';
+                typingContainer.className = 'typing-indicator message assistant-message';
+                typingContainer.innerHTML = '<span></span><span></span><span></span>';
+                
+                const container = document.createElement('div');
+                container.className = 'message-container assistant-message-container';
+                
+                const avatar = document.createElement('div');
+                avatar.className = 'assistant-avatar';
+                avatar.innerHTML = '<i class="fas fa-robot"></i>';
+                
+                container.appendChild(avatar);
+                container.appendChild(typingContainer);
+                
+                chatMessages.appendChild(container);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            function removeTypingIndicator() {
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator) {
+                    indicator.parentElement.remove();
+                }
+            }
+            
+            // Add event listener for Enter key in input field
+            userInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    chatForm.dispatchEvent(new Event('submit'));
+                }
+            });
+            
+            // Add message function with improved styling and animations
+            function addMessage(content, role) {
+                const container = document.createElement('div');
+                container.className = `message-container ${role}-message-container`;
+                
+                const avatar = document.createElement('div');
+                avatar.className = `${role}-avatar`;
+                
+                const icon = document.createElement('i');
+                icon.className = role === 'user' ? 'fas fa-user' : 'fas fa-robot';
+                avatar.appendChild(icon);
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${role}-message`;
+                
+                // Markdown rendering and code highlighting
+                messageDiv.innerHTML = marked.parse(content);
+                messageDiv.querySelectorAll('pre code').forEach((block) => {
+                    block.innerHTML = block.innerHTML
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;');
+                });
+                
+                container.appendChild(avatar);
+                container.appendChild(messageDiv);
+                
+                // Add to chat with a slight delay for animation effect
+                setTimeout(() => {
+                    chatMessages.appendChild(container);
+                    // Scroll to bottom
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }, 100);
+            }
+            
+            // Add system message (not part of conversation history)
+            function addSystemMessage(content, type = 'info') {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `alert alert-${type} text-center my-2`;
+                messageDiv.innerHTML = content;
+                
+                // Add to chat
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // Show toast notification
+            function showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = 'toast show';
+                toast.setAttribute('role', 'alert');
+                toast.setAttribute('aria-live', 'assertive');
+                toast.setAttribute('aria-atomic', 'true');
+                toast.innerHTML = `
+                    <div class="toast-header" style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); color: white;">
+                        <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'} me-2"></i>
+                        <strong class="me-auto">Astra AI</strong>
+                        <small>Just now</small>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                `;
+                const toastContainer = document.createElement('div');
+                toastContainer.className = 'position-fixed p-3 toast-center';
+                toastContainer.style.zIndex = '1055';
+                toastContainer.appendChild(toast);
+                document.body.appendChild(toastContainer);
+                setTimeout(() => {
+                    toastContainer.remove();
+                }, 3000);
+            }
+            
+            // Focus input on page load
+            userInput.focus();
+        });
+    </script>
+</body>
+</html>
