@@ -1,9 +1,5 @@
-<<<<<<< HEAD
+
 flask==3.0.3
 google-generativeai==0.7.2
 gunicorn==20.1.0  # or another version
-=======
-flask==3.0.3
-google-generativeai==0.7.2
-gunicorn==20.1.0
->>>>>>> 2cfb6ec (added)
+
